@@ -1,0 +1,215 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Football Quarter Manager</title>
+<style>
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
+body{
+margin:0;
+background:#070c14;
+font-family:Pretendard,system-ui,sans-serif;
+color:#f2f4f7;
+display:flex;
+justify-content:center;
+}
+
+.app{
+width:min(100vw,430px);
+padding:8px;
+}
+
+.panel{
+background:linear-gradient(#171a1d,#121417);
+border:1px solid #2e3339;
+padding:10px;
+margin-bottom:8px;
+box-shadow:0 6px 16px rgba(0,0,0,.45);
+}
+
+.brand{
+text-align:center;
+font-weight:800;
+margin-bottom:8px;
+}
+
+.row{
+display:grid;
+grid-template-columns:60px 40px 1fr 50px 40px;
+gap:6px;
+margin-bottom:8px;
+}
+
+.box{
+background:linear-gradient(#2a2f35,#23282e);
+border:1px solid #3b424a;
+display:flex;
+align-items:center;
+justify-content:center;
+height:34px;
+font-size:12px;
+font-weight:700;
+box-shadow:0 2px 4px rgba(0,0,0,.4);
+}
+
+.input{
+height:34px;
+border:none;
+background:#eef1f3;
+text-align:center;
+font-weight:700;
+}
+
+.btn{
+cursor:pointer;
+}
+
+.btn-delete{
+background:linear-gradient(#5b2323,#4a1c1c);
+}
+
+.btn-delete.active{
+background:#c62828;
+}
+
+.field-panel{
+background:linear-gradient(#08140d,#0a1810);
+border:1px solid #1f2c22;
+padding:10px;
+margin-bottom:8px;
+}
+
+.header{
+display:grid;
+grid-template-columns:80px 44px 44px 1fr;
+gap:6px;
+margin-bottom:8px;
+}
+
+.field{
+background:linear-gradient(#0d5b19,#0a4b15);
+height:380px;
+position:relative;
+}
+
+.grid{
+position:absolute;
+top:0;
+left:0;
+width:100%;
+height:100%;
+display:grid;
+grid-template-columns:repeat(5,1fr);
+grid-template-rows:repeat(5,1fr);
+gap:6px;
+padding:10px;
+}
+
+.slot{
+border:1px dashed rgba(255,255,255,.2);
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:700;
+font-size:15px;
+background:rgba(255,255,255,.04);
+}
+
+.gk{
+color:#b88912;
+font-size:11px;
+margin-top:2px;
+}
+
+.rest{
+background:linear-gradient(#2a2f35,#23282e);
+border:1px solid #3b424a;
+height:34px;
+display:flex;
+align-items:center;
+padding:0 8px;
+font-weight:700;
+margin-right:6px;
+margin-bottom:6px;
+}
+
+.restwrap{
+display:flex;
+flex-wrap:wrap;
+}
+
+.credit{
+text-align:center;
+font-size:10px;
+opacity:.6;
+margin-top:6px;
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+
+<div class="panel">
+<div class="brand">Football Quarter Manager</div>
+
+<div class="row">
+<div class="box">참석자</div>
+<div class="box" id="count">0</div>
+<input class="input" id="nameInput" placeholder="이름 입력">
+<div class="box btn" id="addBtn">추가</div>
+<div class="box btn btn-delete" id="delBtn">삭제</div>
+</div>
+
+<div id="players"></div>
+
+</div>
+
+<div class="field-panel">
+
+<div class="header">
+<div class="box">포메이션</div>
+<div class="box btn">리셋</div>
+<div class="box btn">복사</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
+<div class="box">1Q</div>
+<div class="box">2Q</div>
+<div class="box">3Q</div>
+<div class="box">4Q</div>
+</div>
+</div>
+
+<div class="field">
+<div class="grid" id="grid"></div>
+</div>
+
+</div>
+
+<div class="panel">
+<div class="restwrap">
+<div class="rest">휴식</div>
+</div>
+</div>
+
+<div class="credit">Hayden Lee</div>
+
+</div>
+
+<script>
+const grid=document.getElementById("grid")
+for(let i=0;i<25;i++){
+const s=document.createElement("div")
+s.className="slot"
+if(i==22){
+s.innerHTML="<div>GK</div>"
+s.style.color="#b88912"
+}
+grid.appendChild(s)
+}
+</script>
+
+</body>
+</html>
