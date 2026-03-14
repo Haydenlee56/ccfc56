@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Football Quarter Manager</title>
+<style>
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css");
+
+:root{
+  --w:min(100vw,430px);
+  --label-w:52px;
+  --count-w:38px;
+  --add-w:48px;
+  --del-w:36px;
+  --seg-w:46px;
+  --group-gap:10px;
+  --rest-gap:6px;
+
+  --bg:#05070b;
+  --bg2:#0b0e13;
+  --panel:#1a1d22;
+  --panel2:#101318;
+  --panel-line:#434951;
+  --panel-edge:#090b0e;
+
+  --field-panel:#0d1013;
+  --field-panel2:#07090c;
+  --field-panel-line:#2c3138;
+
+  --box-top:#5d6670;
+  --box-mid:#404850;
+  --box-bot:#252b31;
+  --box-line:#101419;
+  --box-hi:rgba(255,255,255,.18);
+  --box-lo:rgba(0,0,0,.65);
+
+  --tool-top:#6e7883;
+  --tool-mid:#48515b;
+  --tool-bot:#242a31;
+  --tool-line:#0d1116;
+
+  --chip-top:#f8fbfd;
+  --chip-bot:#cfd9e0;
+  --chip-line:#96a1ac;
+  --chip-text:#0f1720;
+
+  --rest-top:#d8dfe6;
+  --rest-bot:#9ca6b1;
+  --rest-line:#717b86;
+  --rest-text:#0f1720;
+
+  --field-dark:#17371d;
+  --field-mid:#2f6031;
+  --field-light:#446d43;
+  --field-line:rgba(232,241,232,.42);
+  --slot-line:rgba(255,255,255,.16);
+
+  --text:#f0f3f6;
+  --muted:#929aa5;
+  --gold:#d0a442;
+  --danger:#c93a3a;
+  --danger2:#711616;
+  --danger-line:#ff8f8f;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{
+  margin:0;
+  background:
+    radial-gradient(circle at 50% -10%, rgba(255,255,255,.06), transparent 22%),
+    linear-gradient(180deg, #0a0d12 0%, var(--bg) 40%, #030406 100%);
+  color:var(--text);
+  font-family:"Pretendard",system-ui,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+}
+.app{width:var(--w);min-height:100dvh;padding:8px}
+.frame{min-height:calc(100dvh - 16px);display:flex;flex-direction:column;gap:8px}
+
+.panel,
+.field-panel{
+  background:
+    linear-gradient(180deg, rgba(6,17,12,.92) 0%, rgba(6,17,12,0) 100%);
+  border:none;
+  box-shadow:
+    inset 0 -1px 0 rgba(0,0,0,.78),
+    0 10px 28px rgba(0,0,0,.6);
+}
+.field-panel{
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,0) 10%),
+    linear-gradient(180deg,var(--field-panel),var(--field-panel2));
+  border-color:var(--field-panel-line);
+}
+.panel{
+  position:relative;
+  border:none;
+  background:
+    linear-gradient(180deg, rgba(11,23,17,.88) 0%, rgba(17,36,26,0) 100%);
+  box-shadow:
+    inset 0 -1px 0 rgba(0,0,0,.72),
+    0 8px 24px rgba(0,0,0,.55);
+  padding:10px;
+}
+.brand{text-align:center;margin-bottom:8px}
+.brand-icon{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:16px;
+  height:16px;
+  color:#d7e2da;
+  opacity:.96;
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,.45));
+}
+.brand-badge{
+  display:inline-flex;
+  align-items:center;
+  gap:12px;
+  padding:0;
+  font-size:15px;
+  font-weight:900;
+  letter-spacing:.35px;
+  color:#eef3f7;
+  border:none;
+  background:none;
+  box-shadow:none;
+  text-shadow:
+    0 1px 0 rgba(0,0,0,.65),
+    0 2px 8px rgba(0,0,0,.25);
+  border-radius:0;
+}
+.brand-badge::before,
+.brand-badge::after{
+  content:"";
+  display:block;
+  width:1px;
+  height:16px;
+  background:rgba(238,243,247,.92);
+  box-shadow:0 1px 2px rgba(0,0,0,.35);
+}
+
+.box,.quarter-tab,.tool-btn{
+  display:flex;align-items:center;justify-content:center;
+  height:34px;
+  border:none;
+  background:
+    linear-gradient(135deg, #171b20 0%, #1d2227 74%, #252a31 92%, #292e35 100%);
+  color:#f2f5f7;
+  font-size:12px;
+  font-weight:700;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035),
+    0 8px 18px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.025),
+    inset 0 -1px 0 rgba(0,0,0,.5);
+  user-select:none;
+  text-shadow:0 1px 0 rgba(0,0,0,.42);
+  border-radius:0;
+}
+.box.clickable,.quarter-tab,.tool-btn{cursor:pointer}
+.box:active,.quarter-tab:active,.tool-btn:active{
+  transform:translateY(1px);
+  box-shadow:
+    inset 0 2px 5px rgba(0,0,0,.5),
+    inset 0 1px 0 rgba(255,255,255,.06);
+}
+.tool-btn,.tool-dark{
+  background:
+    linear-gradient(135deg, #171b20 0%, #1d2227 74%, #252a31 92%, #292e35 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035),
+    0 8px 18px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.025),
+    inset 0 -1px 0 rgba(0,0,0,.5);
+  border-radius:0;
+}
+.box.delete.active{
+  background:
+    linear-gradient(135deg, #7b1f1f 0%, #8a2424 72%, #972b2b 92%, #a83232 100%);
+  color:#fff;
+  border:none;
+}
+
+.top-row{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  column-gap:var(--group-gap);
+  align-items:center;
+  margin-bottom:8px;
+}
+.top-pair{
+  display:grid;
+  grid-template-columns:var(--label-w) var(--count-w);
+  gap:0;
+}
+.top-pair .box + .box{border-left:none}
+.action-pair{
+  display:grid;
+  grid-template-columns:var(--add-w) var(--del-w);
+  gap:0;
+  justify-content:end;
+}
+.action-pair .box + .box{border-left:none}
+
+.name-input{
+  width:100%;
+  height:34px;
+  min-width:0;
+  border:1px solid #cbd2d8;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.45), rgba(255,255,255,0) 40%),
+    #eef1f3;
+  text-align:center;
+  font-size:13px;
+  font-weight:700;
+  color:#10161f;
+  outline:none;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.50), 0 2px 5px rgba(0,0,0,.15);
+  border-radius:0;
+  padding:0;
+}
+.name-input::placeholder{color:#6b7280}
+
+.attendees-grid{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:6px;
+}
+.attendee{
+  height:36px;
+  border:none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.72), rgba(255,255,255,0) 26%),
+    linear-gradient(180deg,#f3f4f6,#dfe3e7);
+  color:#10161f;
+  font-size:12px;
+  font-weight:700;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  padding:0 4px;
+  box-shadow:
+    0 0 0 1px rgba(17,24,39,.10),
+    inset 0 1px 0 rgba(255,255,255,.88),
+    inset 0 -1px 0 rgba(0,0,0,.08),
+    0 2px 5px rgba(0,0,0,.22);
+  cursor:pointer;
+  border-radius:0;
+}
+.attendee.selected{
+  transform: scale(1.16);
+  font-weight:700;
+}
+.attendee.delete-target{
+  border-color:#f2a4a4;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.18), rgba(255,255,255,0) 24%),
+    linear-gradient(180deg,#ffdcdc,#f2b9b9);
+  color:#6f1515;
+}
+.attendee.empty{visibility:hidden;pointer-events:none}
+.attendee .main-num{color:#111827}
+.attendee.selected .main-num{color:#fff}
+.attendee .slash{color:#111827}
+.attendee.selected .slash{color:#fff}
+.attendee .gk-num{color:var(--gold)}
+
+.field-header{
+  display:grid;
+  grid-template-columns:calc(70px + (var(--group-gap) * 3)) calc(var(--seg-w) * 2) minmax(0,1fr);
+  column-gap:var(--group-gap);
+  align-items:center;
+  margin-bottom:8px;
+}
+.field-header > .box{width:100%;}
+.field-header > .tool-pair{width:100%;}
+.field-header > .quarter-tabs{width:100%;}
+.tool-pair{
+  display:grid;
+  grid-template-columns:var(--seg-w) var(--seg-w);
+  gap:0;
+}
+.tool-pair .tool-btn + .tool-btn{border-left:none}
+.quarter-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;}
+.quarter-tab{width:100%;}
+.quarter-tab + .quarter-tab{border-left:none;}
+.quarter-tab.active{
+  background:
+    linear-gradient(135deg, #262c32 0%, #2d343b 74%, #353d45 92%, #3a434b 100%);
+  color:#ffffff;
+  border:none;
+  text-shadow:0 1px 0 rgba(0,0,0,.5);
+}
+
+.field{
+  position:relative;
+  overflow:hidden;
+  border:1px solid #364038;
+  height:48svh;
+  max-height:390px;
+  min-height:250px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.05),
+    inset 0 0 26px rgba(0,0,0,.45),
+    0 0 0 1px rgba(0,0,0,.75),
+    0 4px 16px rgba(0,0,0,.55);
+  background:
+    linear-gradient(90deg,
+      rgba(255,255,255,.05) 0%, rgba(255,255,255,.015) 10%,
+      rgba(255,255,255,.05) 20%, rgba(255,255,255,.015) 30%,
+      rgba(255,255,255,.05) 40%, rgba(255,255,255,.015) 50%,
+      rgba(255,255,255,.05) 60%, rgba(255,255,255,.015) 70%,
+      rgba(255,255,255,.05) 80%, rgba(255,255,255,.015) 90%,
+      rgba(255,255,255,.05) 100%),
+    linear-gradient(0deg,
+      rgba(255,255,255,.03) 0%, rgba(255,255,255,0) 16.666%,
+      rgba(255,255,255,.03) 33.333%, rgba(255,255,255,0) 50%,
+      rgba(255,255,255,.03) 66.666%, rgba(255,255,255,0) 83.333%,
+      rgba(255,255,255,.03) 100%),
+    linear-gradient(90deg,
+      rgba(0,0,0,.10) 0 20%, rgba(255,255,255,.03) 20% 40%, rgba(0,0,0,.08) 40% 60%, rgba(255,255,255,.025) 60% 80%, rgba(0,0,0,.10) 80% 100%),
+    radial-gradient(circle at 50% 45%, rgba(255,255,255,.06), transparent 35%),
+    radial-gradient(circle at center, transparent 50%, rgba(0,0,0,.40) 100%),
+    linear-gradient(180deg, var(--field-light) 0%, var(--field-mid) 46%, var(--field-dark) 100%);
+}
+.field::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at center, transparent 65%, rgba(0,0,0,.28) 100%),
+    repeating-linear-gradient(0deg, rgba(255,255,255,.015) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(90deg, rgba(0,0,0,.02) 0 1px, transparent 1px 4px);
+  mix-blend-mode:normal;
+}
+.field::before{
+  content:"";
+  position:absolute;
+  left:0;top:50%;
+  transform:translateY(-50%);
+  width:100%;height:2px;
+  background:var(--field-line);
+  box-shadow:0 0 2px rgba(255,255,255,.08);
+}
+.center-circle{
+  position:absolute;
+  width:94px;height:94px;
+  border:2px solid var(--field-line);
+  border-radius:50%;
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+}
+.center-dot{
+  position:absolute;
+  width:6px;height:6px;
+  border-radius:50%;
+  background:rgba(232,241,232,.42);
+  left:50%;top:50%;
+  transform:translate(-50%,-50%);
+}
+.penalty-top,.penalty-bottom{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  width:138px;height:58px;
+  border:2px solid var(--field-line);
+  opacity:.95;
+}
+.penalty-top{top:0;border-top:none}
+.penalty-bottom{bottom:0;border-bottom:none}
+.arc-top,.arc-bottom{display:none !important;}
+
+.field-grid{
+  position:absolute;
+  inset:10px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  grid-template-rows:repeat(5,1fr);
+  gap:6px;
+}
+.slot{
+  border:1px dashed var(--slot-line);
+  background:transparent;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  font-size:15px;
+  font-weight:700;
+  color:#f4f7f9;
+  text-align:center;
+  padding:2px;
+  cursor:pointer;
+  user-select:none;
+  text-shadow:0 1px 2px rgba(0,0,0,.85);
+  box-shadow:none;
+}
+.slot.filled{background:transparent}
+.slot:hover{
+  background:rgba(255,255,255,.035);
+  border-color:rgba(255,255,255,.30);
+  box-shadow:
+    inset 0 0 0 1px rgba(255,255,255,.04),
+    0 0 14px rgba(255,255,255,.04);
+}
+.slot.dup{
+  background:rgba(93,14,14,.35);
+  border-color:#f0a3a3;
+  color:#fff1f1;
+}
+.gk-label{
+  color:var(--gold);
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.3px;
+  margin-top:2px;
+  line-height:1;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.95),
+    0 0 8px rgba(192,139,20,.18);
+}
+
+.rest-grid{
+  display:grid;
+  grid-template-columns:var(--label-w) repeat(5,minmax(0,1fr));
+  column-gap:var(--rest-gap);
+  row-gap:var(--rest-gap);
+  align-items:stretch;
+}
+.rest-label{
+  width:100%;
+  height:34px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  background:
+    linear-gradient(135deg, #171b20 0%, #1d2227 74%, #252a31 92%, #292e35 100%);
+  border:none;
+  color:#f2f5f7;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035),
+    0 8px 18px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.025),
+    inset 0 -1px 0 rgba(0,0,0,.5);
+  border-radius:0;
+}
+.rest-cell{
+  width:100%;
+  min-width:0;
+  height:36px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:12px;
+  font-weight:700;
+  padding:0 4px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  border:none;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.32), rgba(255,255,255,0) 28%),
+    linear-gradient(180deg,#d7dde3,#bcc3cb);
+  color:#10161f;
+  box-shadow:
+    0 0 0 1px rgba(17,24,39,.08),
+    inset 0 1px 0 rgba(255,255,255,.55),
+    inset 0 -1px 0 rgba(0,0,0,.06),
+    0 2px 6px rgba(0,0,0,.18);
+  border-radius:0;
+}
+.credit{text-align:center;color:var(--muted);font-size:10px;margin-top:auto;padding-top:2px;letter-spacing:.15px}
+
+@media (max-width:380px){
+  .box,.quarter-tab,.tool-btn{font-size:11px}
+  .attendee{font-size:11px}
+  .slot{font-size:14px}
+  .rest-cell,.rest-label{font-size:11px}
+  .field-header{grid-template-columns:calc(64px + (var(--group-gap) * 3)) calc(42px * 2) minmax(0,1fr);}
+  .tool-pair{grid-template-columns:42px 42px}
+  .top-row{grid-template-columns:auto minmax(0,1fr) auto}
+  .action-pair{grid-template-columns:42px 34px}
+  .rest-grid{grid-template-columns:52px repeat(5,minmax(0,1fr))}
+}
+</style>
+
+<style id="v34-fixes">
+.panel,.field-panel,.brand-badge,.box,.quarter-tab,.tool-btn,.tool-dark,.rest-label{border:none !important;}
+</style>
+
+
+<style id="v36-extra">
+.rest-panel,.panel.rest-panel{
+  background:
+    linear-gradient(180deg, rgba(17,36,26,0) 0%, rgba(11,23,17,.88) 100%) !important;
+}
+</style>
+
+
+<style id="v36-formation-sample">
+.formation-box,.box.formation-box{
+  background:
+    linear-gradient(180deg, rgba(38,44,50,.96) 0%, rgba(29,34,39,.88) 46%, rgba(23,27,32,.55) 74%, rgba(23,27,32,.18) 100%) !important;
+}
+</style>
+
+
+<style id="v37-page-bg-and-controls">
+/* 1) remove click effect from attendee/count/formation boxes only */
+.top-pair .box,
+.field-header > .box{
+  cursor:default !important;
+}
+.top-pair .box:active,
+.field-header > .box:active{
+  transform:none !important;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.035),
+    0 8px 18px rgba(0,0,0,.4),
+    inset 0 1px 0 rgba(255,255,255,.025),
+    inset 0 -1px 0 rgba(0,0,0,.5) !important;
+}
+
+/* 2) align field header width logic with top row */
+.field-header{
+  grid-template-columns:calc(var(--label-w) + var(--count-w)) calc(var(--seg-w) * 2) minmax(0,1fr) !important;
+  column-gap:var(--group-gap) !important;
+}
+
+/* 3) one shared page background, no separate panel backgrounds */
+body{
+  background:
+    radial-gradient(circle at 50% 46%, rgba(73,116,60,.16) 0%, rgba(73,116,60,.09) 18%, rgba(73,116,60,0) 34%),
+    linear-gradient(180deg,
+      #07130d 0%,
+      #0d2117 18%,
+      #163121 34%,
+      #21402a 46%,
+      #173221 60%,
+      #0d2117 78%,
+      #07130d 100%) !important;
+}
+.panel,
+.field-panel{
+  background:transparent !important;
+  border:none !important;
+  box-shadow:none !important;
+}
+
+/* 4) make input a bit smaller and delete a bit wider, but still smaller than add */
+:root{
+  --add-w:48px !important;
+  --del-w:42px !important;
+}
+.name-input{
+  font-size:12px !important;
+}
+
+/* 5) quarter active brighter within same family */
+.quarter-tab.active{
+  background:
+    linear-gradient(135deg, #2f363d 0%, #394149 74%, #444d56 92%, #4b555f 100%) !important;
+  color:#ffffff !important;
+  border:none !important;
+}
+
+/* formation sample stays but keep same box tone */
+.field-header > .box.formation-box,
+.formation-box{
+  background:
+    linear-gradient(180deg, rgba(31,36,42,.98) 0%, rgba(28,33,38,.95) 42%, rgba(24,28,33,.55) 76%, rgba(21,25,29,.10) 100%) !important;
+}
+</style>
+
+
+<style id="v38-tight-bg-width-icon">
+/* 1) Background only within the same overall content area, not full page */
+body{
+  background:#07130d !important;
+}
+.app{
+  background:transparent !important;
+}
+.frame{
+  position:relative;
+  min-height:calc(100dvh - 16px);
+}
+.frame::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:0;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(73,116,60,.14) 0%, rgba(73,116,60,.08) 16%, rgba(73,116,60,0) 28%),
+    linear-gradient(180deg,
+      #07130d 0%,
+      #0d2117 22%,
+      #183423 42%,
+      #21402a 50%,
+      #163222 62%,
+      #0d2117 80%,
+      #07130d 100%);
+  border-radius:6px;
+}
+.frame > *{
+  position:relative;
+  z-index:1;
+}
+
+/* 2) Narrow field header width so Formation~4Q aligns closer to top row total visual width */
+.field-header{
+  width:calc(100% - 22px) !important;
+  margin:0 auto 8px !important;
+}
+
+/* 3) More soccer-ball-like icon */
+.brand-icon{
+  width:17px !important;
+  height:17px !important;
+  color:#e4ece5 !important;
+}
+</style>
+
+
+<style id="v40-edge-fade">
+.box,.quarter-tab,.tool-btn,.tool-dark,.rest-label{
+  background:
+    radial-gradient(ellipse at 50% 48%,
+      rgba(30,35,40,1) 0%,
+      rgba(30,35,40,1) 45%,
+      rgba(30,35,40,.9) 60%,
+      rgba(30,35,40,.55) 78%,
+      rgba(30,35,40,.25) 90%,
+      rgba(30,35,40,0) 100%) !important;
+}
+.attendee{
+  background:
+    radial-gradient(ellipse at 50% 48%,
+      rgba(245,246,248,1) 0%,
+      rgba(245,246,248,1) 50%,
+      rgba(245,246,248,.7) 75%,
+      rgba(245,246,248,.35) 90%,
+      rgba(245,246,248,0) 100%) !important;
+}
+.rest-cell{
+  background:
+    radial-gradient(ellipse at 50% 48%,
+      rgba(213,220,226,1) 0%,
+      rgba(213,220,226,1) 50%,
+      rgba(213,220,226,.7) 75%,
+      rgba(213,220,226,.35) 90%,
+      rgba(213,220,226,0) 100%) !important;
+}
+</style>
+
+
+<style id="v41-cleanup">
+/* shorter shared background */
+.frame::before{
+  height:min(100%, 920px) !important;
+}
+
+/* remove outline rings that read like borders */
+.box,.quarter-tab,.tool-btn,.tool-dark,.rest-label,
+.attendee,.rest-cell{
+  border:none !important;
+  outline:none !important;
+}
+
+/* dark boxes: center visible, edges fade to transparent */
+.box,.quarter-tab,.tool-btn,.tool-dark,.rest-label{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(26,30,35,1) 0%,
+      rgba(26,30,35,1) 48%,
+      rgba(26,30,35,.82) 68%,
+      rgba(26,30,35,.42) 84%,
+      rgba(26,30,35,.10) 94%,
+      rgba(26,30,35,0) 100%) !important;
+  box-shadow:
+    0 10px 18px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.015),
+    inset 0 -1px 0 rgba(0,0,0,.14) !important;
+}
+
+/* brighter active quarter, still same family */
+.quarter-tab.active{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(54,61,69,1) 0%,
+      rgba(54,61,69,1) 48%,
+      rgba(54,61,69,.84) 68%,
+      rgba(54,61,69,.46) 84%,
+      rgba(54,61,69,.12) 94%,
+      rgba(54,61,69,0) 100%) !important;
+}
+
+/* delete active red with transparent edges */
+.box.delete.active{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(132,33,33,1) 0%,
+      rgba(132,33,33,1) 48%,
+      rgba(132,33,33,.84) 68%,
+      rgba(132,33,33,.46) 84%,
+      rgba(132,33,33,.12) 94%,
+      rgba(132,33,33,0) 100%) !important;
+}
+
+/* attendee chips fade to transparent edges */
+.attendee{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(245,246,248,1) 0%,
+      rgba(245,246,248,1) 55%,
+      rgba(245,246,248,.72) 76%,
+      rgba(245,246,248,.28) 92%,
+      rgba(245,246,248,0) 100%) !important;
+  box-shadow:
+    0 2px 5px rgba(0,0,0,.18),
+    inset 0 1px 0 rgba(255,255,255,.7) !important;
+}
+.rest-cell{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(213,220,226,1) 0%,
+      rgba(213,220,226,1) 55%,
+      rgba(213,220,226,.72) 76%,
+      rgba(213,220,226,.28) 92%,
+      rgba(213,220,226,0) 100%) !important;
+  box-shadow:
+    0 2px 5px rgba(0,0,0,.14),
+    inset 0 1px 0 rgba(255,255,255,.45) !important;
+}
+</style>
+
+
+<style id="v43-chip-edge-fade">
+/* attendee & rest chips: edges fully transparent */
+.attendee{
+  border:none !important;
+  box-shadow:none !important;
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(245,246,248,1) 0%,
+      rgba(245,246,248,1) 60%,
+      rgba(245,246,248,.6) 80%,
+      rgba(245,246,248,.2) 92%,
+      rgba(245,246,248,0) 100%) !important;
+}
+
+.rest-cell{
+  border:none !important;
+  box-shadow:none !important;
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(213,220,226,1) 0%,
+      rgba(213,220,226,1) 60%,
+      rgba(213,220,226,.6) 80%,
+      rgba(213,220,226,.2) 92%,
+      rgba(213,220,226,0) 100%) !important;
+}
+</style>
+
+
+<style id="v44-text-only-names">
+.attendee,
+.rest-cell{
+  background:none !important;
+  border:none !important;
+  box-shadow:none !important;
+  color:#ffffff !important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.9),
+    0 0 4px rgba(0,0,0,.6);
+}
+</style>
+
+
+<style id="v45-button-center-light-and-quarter-text">
+/* 1) quarter count text white by default (GK rule remains if more specific) */
+.attendee .quarter-count,
+.attendee .q,
+.rest-cell .quarter-count,
+.rest-cell .q{
+  color:#ffffff;
+}
+
+/* 2) buttons: edges transparent, center slightly brighter */
+.box,
+.quarter-tab,
+.tool-btn,
+.tool-dark,
+.rest-label{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(42,48,55,0.95) 0%,
+      rgba(38,43,49,0.92) 35%,
+      rgba(32,37,42,0.75) 60%,
+      rgba(26,30,35,0.35) 82%,
+      rgba(26,30,35,0) 100%) !important;
+}
+</style>
+
+
+<style id="v46-quarter-text-fix">
+.attendee span,
+.rest-cell span{
+  color:#ffffff !important;
+}
+
+/* keep goalkeeper quarter count yellow if specific class exists */
+.gk-quarter,
+.goalkeeper-quarter,
+.q-gk{
+  color:#ffd84d !important;
+}
+</style>
+
+
+<style id="v47-quarter-color-press">
+/* 1) quarter count colors */
+.quarter-field{
+  color:#ffffff !important;
+}
+.quarter-gk{
+  color:#ffd84d !important;
+}
+
+/* fallback if different class names are used */
+.attendee .q-field{color:#ffffff !important;}
+.attendee .q-gk{color:#ffd84d !important;}
+
+/* 2) press feedback when clicking attendee name */
+.attendee{
+  cursor:pointer;
+  transition:transform .05s ease, text-shadow .05s ease;
+}
+
+.attendee:active{
+  transform:translateY(1px) scale(0.98);
+  text-shadow:
+    0 1px 1px rgba(0,0,0,.9),
+    0 0 2px rgba(0,0,0,.7);
+}
+</style>
+
+
+<style id="v48-quarter-gk-yellow-input-transparent">
+/* field quarter counts */
+.quarter-field,
+.q-field{
+  color:#ffffff !important;
+}
+
+/* goalkeeper quarter counts */
+.quarter-gk,
+.q-gk,
+.gk-quarter,
+.goalkeeper-quarter,
+.gk{
+  color:#ffd84d !important;
+}
+
+/* make name input border transparent */
+.name-input{
+  border:none !important;
+  outline:none !important;
+  box-shadow:none !important;
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(238,241,243,0.95) 0%,
+      rgba(238,241,243,0.85) 55%,
+      rgba(238,241,243,0.45) 80%,
+      rgba(238,241,243,0) 100%) !important;
+}
+</style>
+
+
+<style id="v51-gk-num-direct-style">
+.gk-num{
+  color:#ffd84d !important;
+}
+.main-num,
+.slash{
+  color:#ffffff !important;
+}
+</style>
+
+
+<style id="v53-gk-yellow-override">
+.attendee .gk-num,
+.attendee span.gk-num,
+.rest-cell .gk-num,
+.rest-cell span.gk-num{
+  color:#ffd84d !important;
+}
+.attendee .main-num,
+.attendee .slash,
+.rest-cell .main-num,
+.rest-cell .slash{
+  color:#ffffff !important;
+}
+</style>
+
+
+<style id="v54-selected-and-gk-polish">
+/* 2) selected attendee emphasis */
+.attendee.selected{
+  transform: scale(1.16);
+  font-weight:700;
+}
+
+/* 3) GK slot emphasis */
+.gk-label{
+  color:#ffd84d !important;
+  text-shadow:
+    0 1px 2px rgba(0,0,0,.95),
+    0 0 8px rgba(255,216,77,.28),
+    0 0 14px rgba(255,216,77,.14) !important;
+  font-weight:900 !important;
+  letter-spacing:.35px;
+}
+</style>
+
+
+<style id="v57-copy-mode-style">
+#copyNextBtn.active{
+  background:
+    radial-gradient(ellipse at 50% 50%,
+      rgba(56,63,72,1) 0%,
+      rgba(56,63,72,1) 48%,
+      rgba(56,63,72,.84) 68%,
+      rgba(56,63,72,.46) 84%,
+      rgba(56,63,72,.12) 94%,
+      rgba(56,63,72,0) 100%) !important;
+  color:#ffffff !important;
+}
+</style>
+
+
+<style id="v60-drag-style">
+.slot{touch-action:manipulation;}
+.slot.filled{touch-action:none;}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <div class="frame">
+    <div class="panel">
+      <div class="brand"><span class="brand-badge"><span>Football Quarter Manager</span></span></div>
+      <div class="top-row">
+        <div class="top-pair">
+          <div class="box">참석자</div>
+          <div id="countBox" class="box">0</div>
+        </div>
+        <input id="nameInput" class="name-input" placeholder="이름 입력" maxlength="12" />
+        <div class="action-pair">
+          <div id="addBtn" class="box clickable">추가</div>
+          <div id="deleteModeBtn" class="box delete tool-dark clickable">삭제</div>
+        </div>
+      </div>
+      <div id="attendeeGrid" class="attendees-grid"></div>
+    </div>
+
+    <div class="field-panel">
+      <div class="field-header">
+        <div class="box">포메이션</div>
+        <div class="tool-pair">
+          <div id="clearQuarterBtn" class="tool-btn tool-dark">리셋</div>
+          <div id="copyNextBtn" class="tool-btn tool-dark">복사</div>
+        </div>
+        <div id="quarterTabs" class="quarter-tabs"></div>
+      </div>
+
+      <div class="field">
+        <div class="penalty-top"></div>
+        <div class="penalty-bottom"></div>
+        <div class="arc-top"></div>
+        <div class="arc-bottom"></div>
+        <div class="center-circle"></div>
+        <div class="center-dot"></div>
+        <div id="fieldGrid" class="field-grid"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div id="restGrid" class="rest-grid"></div>
+    </div>
+
+    <div class="credit">Hayden Lee</div>
+  </div>
+</div>
+
+<script>
+(() => {
+const STORAGE_KEY="quarter-manager-layout-v29";
+const MAX_PLAYERS=20;
+const QUARTERS=["1Q","2Q","3Q","4Q"];
+const SLOT_KEYS=Array.from({length:25},(_,i)=>`S${i+1}`);
+const GK_SLOT="S23";
+const $=id=>document.getElementById(id);
+
+function createEmptyQuarter(){const q={};SLOT_KEYS.forEach(k=>q[k]="");return q}
+function initialState(){const quarters={};QUARTERS.forEach(q=>quarters[q]=createEmptyQuarter());return{players:[],activeQuarter:"1Q",selectedPlayer:"",deleteMode:false,pendingCopyFrom:null,quarters}}
+function load(){try{const raw=localStorage.getItem(STORAGE_KEY);if(!raw)return initialState();const parsed=JSON.parse(raw);const quarters={};QUARTERS.forEach(q=>quarters[q]={...createEmptyQuarter(),...((parsed.quarters&&parsed.quarters[q])||{})});return{players:Array.isArray(parsed.players)?parsed.players.slice(0,MAX_PLAYERS):[],activeQuarter:QUARTERS.includes(parsed.activeQuarter)?parsed.activeQuarter:"1Q",selectedPlayer:parsed.selectedPlayer||"",deleteMode:!!parsed.deleteMode,pendingCopyFrom:QUARTERS.includes(parsed.pendingCopyFrom)?parsed.pendingCopyFrom:null,quarters}}catch{return initialState()}}
+let state=load();
+let dragState={slotKey:null,startX:0,startY:0,moved:false,started:false};
+
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify(state))}
+function normalize(v){return String(v||"").trim()}
+function fieldQuarterCount(player){return QUARTERS.reduce((sum,q)=>sum+Object.entries(state.quarters[q]).filter(([key,val])=>key!==GK_SLOT&&normalize(val)===player).length,0)}
+function gkQuarterCount(player){return QUARTERS.reduce((sum,q)=>sum+(normalize(state.quarters[q][GK_SLOT])===player?1:0),0)}
+function duplicateNames(q){const counts={};Object.values(state.quarters[q]).forEach(v=>{const n=normalize(v);if(!n)return;counts[n]=(counts[n]||0)+1});return new Set(Object.keys(counts).filter(name=>counts[name]>1))}
+function assignedNamesForQuarter(q){return new Set(Object.values(state.quarters[q]).map(normalize).filter(Boolean))}
+function resters(q){const assigned=assignedNamesForQuarter(q);return state.players.filter(name=>!assigned.has(name))}
+function addPlayer(){const input=$("nameInput"),name=normalize(input.value);if(!name)return;if(state.players.includes(name)){input.value="";return}if(state.players.length>=MAX_PLAYERS){alert("최대 20명까지 추가할 수 있습니다.");return}state.players.push(name);input.value="";render()}
+function removePlayer(name){state.players=state.players.filter(p=>p!==name);QUARTERS.forEach(q=>{Object.keys(state.quarters[q]).forEach(k=>{if(normalize(state.quarters[q][k])===name)state.quarters[q][k]=""})});if(state.selectedPlayer===name)state.selectedPlayer="";render()}
+function selectPlayer(name){if(state.deleteMode){removePlayer(name);return}state.selectedPlayer=state.selectedPlayer===name?"":name;render()}
+function setQuarter(q){state.activeQuarter=q;state.selectedPlayer="";render()}
+function clearCurrentQuarter(){if(!confirm(`${state.activeQuarter}를 초기화할까요?`))return;state.quarters[state.activeQuarter]=createEmptyQuarter();state.selectedPlayer="";render()}
+function handleCopyAction(){
+  if(!state.pendingCopyFrom){
+    state.pendingCopyFrom=state.activeQuarter;
+    state.selectedPlayer="";
+    render();
+    return;
+  }
+  const sourceQ=state.pendingCopyFrom;
+  const targetQ=state.activeQuarter;
+  state.quarters[targetQ]={...state.quarters[sourceQ]};
+  state.pendingCopyFrom=null;
+  state.selectedPlayer="";
+  render();
+}
+function toggleDeleteMode(){state.deleteMode=!state.deleteMode;if(state.deleteMode)state.selectedPlayer="";render()}
+function handleSlotClick(slotKey){const current=state.quarters[state.activeQuarter][slotKey];if(state.selectedPlayer){state.quarters[state.activeQuarter][slotKey]=state.selectedPlayer;state.selectedPlayer=""}else if(current){state.quarters[state.activeQuarter][slotKey]=""}render()}
+function moveOrSwapSlot(fromKey,toKey){
+  if(fromKey===toKey)return;
+  const q=state.activeQuarter;
+  const fromVal=state.quarters[q][fromKey];
+  const toVal=state.quarters[q][toKey];
+  state.quarters[q][toKey]=fromVal;
+  state.quarters[q][fromKey]=toVal;
+  render();
+}
+function getClientPoint(e){
+  if(e.touches&&e.touches[0]) return {x:e.touches[0].clientX,y:e.touches[0].clientY};
+  if(e.changedTouches&&e.changedTouches[0]) return {x:e.changedTouches[0].clientX,y:e.changedTouches[0].clientY};
+  return {x:e.clientX,y:e.clientY};
+}
+function startSlotPress(e,slotKey,name){
+  if(!name)return;
+  const p=getClientPoint(e);
+  dragState={slotKey,startX:p.x,startY:p.y,moved:false,started:true,name:name};
+}
+function moveSlotPress(e){
+  if(!dragState.started)return;
+  const p=getClientPoint(e);
+  const dx=Math.abs(p.x-dragState.startX), dy=Math.abs(p.y-dragState.startY);
+  if(dx>4||dy>4) dragState.moved=true;
+}
+function endSlotPress(e,slotKey,name){
+  if(!dragState.started||dragState.slotKey!==slotKey)return;
+  const wasMoved=dragState.moved;
+  dragState={slotKey:null,startX:0,startY:0,moved:false,started:false};
+  if(!name)return;
+  if(!wasMoved){
+    state.quarters[state.activeQuarter][slotKey]="";
+    render();
+    return;
+  }
+  const p=getClientPoint(e);
+  const el=document.elementFromPoint(p.x,p.y);
+  const target=el && el.closest ? el.closest('.slot[data-slot-key]') : null;
+  if(target){
+    const toKey=target.getAttribute('data-slot-key');
+    moveOrSwapSlot(slotKey,toKey);
+  }else{
+    render();
+  }
+}
+function renderQuarterTabs(){const wrap=$("quarterTabs");wrap.innerHTML="";QUARTERS.forEach(q=>{const btn=document.createElement("div");btn.className="quarter-tab box clickable"+(state.activeQuarter===q?" active":"");btn.textContent=q;btn.addEventListener("click",()=>setQuarter(q));wrap.appendChild(btn)})}
+function renderAttendees(){const grid=$("attendeeGrid");grid.innerHTML="";const list=state.players.slice();while(list.length<MAX_PLAYERS)list.push("");list.forEach(name=>{const btn=document.createElement("button");btn.className="attendee"+(name&&state.selectedPlayer===name?" selected":"")+(name&&state.deleteMode?" delete-target":"")+(!name?" empty":"");if(name){const field=fieldQuarterCount(name),gk=gkQuarterCount(name);btn.innerHTML=gk>0?`${name} <span class="main-num">(${field}</span><span class="slash">/</span><span class="gk-num">${gk}</span><span class="main-num">)</span>`:`${name} <span class="main-num">(${field})</span>`;btn.addEventListener("click",()=>selectPlayer(name))}grid.appendChild(btn)});$("countBox").textContent=String(state.players.length);$("deleteModeBtn").classList.toggle("active",state.deleteMode)}
+function renderField(){const grid=$("fieldGrid"),q=state.activeQuarter,dups=duplicateNames(q);grid.innerHTML="";SLOT_KEYS.forEach(slotKey=>{const name=state.quarters[q][slotKey];const div=document.createElement("div");div.className="slot"+(name?" filled":"")+(name&&dups.has(normalize(name))?" dup":"");div.setAttribute("data-slot-key",slotKey);if(name){if(slotKey===GK_SLOT){div.innerHTML=`<div>${name}</div><div class="gk-label">GK</div>`}else{div.textContent=name}}else if(slotKey===GK_SLOT){div.innerHTML=`<div class="gk-label">GK</div>`}
+if(name){
+  div.addEventListener("pointerdown",e=>startSlotPress(e,slotKey,name));
+  div.addEventListener("pointermove",moveSlotPress);
+  div.addEventListener("pointerup",e=>endSlotPress(e,slotKey,name));
+  div.addEventListener("pointercancel",()=>{dragState={slotKey:null,startX:0,startY:0,moved:false,started:false};});
+  div.addEventListener("touchstart",e=>startSlotPress(e,slotKey,name),{passive:true});
+  div.addEventListener("touchmove",e=>moveSlotPress(e),{passive:true});
+  div.addEventListener("touchend",e=>endSlotPress(e,slotKey,name));
+}else{
+  div.addEventListener("click",()=>handleSlotClick(slotKey));
+}
+grid.appendChild(div)})}
+function renderRest(){
+  const grid=$("restGrid");
+  grid.innerHTML="";
+
+  const label=document.createElement("div");
+  label.className="rest-label";
+  label.textContent="휴식";
+  grid.appendChild(label);
+
+  const names=resters(state.activeQuarter).slice(0,10);
+  const firstRow=names.slice(0,5);
+  const secondRow=names.slice(5,10);
+
+  firstRow.forEach(name=>{
+    const div=document.createElement("div");
+    div.className="rest-cell";
+    div.textContent=name;
+    grid.appendChild(div);
+  });
+
+  if(secondRow.length){
+    const spacer=document.createElement("div");
+    spacer.style.visibility="hidden";
+    spacer.style.pointerEvents="none";
+    grid.appendChild(spacer);
+
+    secondRow.forEach(name=>{
+      const div=document.createElement("div");
+      div.className="rest-cell";
+      div.textContent=name;
+      grid.appendChild(div);
+    });
+  }
+}
+
+function updateCopyButton(){
+  const btn=$("copyNextBtn");
+  if(!btn)return;
+  const pending=!!state.pendingCopyFrom;
+  btn.textContent=pending?"입력":"복사";
+  btn.classList.toggle("active",pending);
+}
+function render(){save();renderQuarterTabs();renderAttendees();renderField();renderRest();updateCopyButton()}
+$("addBtn").addEventListener("click",addPlayer);
+$("nameInput").addEventListener("keydown",e=>{if(e.key==="Enter")addPlayer()});
+$("deleteModeBtn").addEventListener("click",toggleDeleteMode);
+$("clearQuarterBtn").addEventListener("click",clearCurrentQuarter);
+$("copyNextBtn").addEventListener("click",handleCopyAction);
+render();
+})();
+</script>
+
+
+
+
+
+<style id="v50-gk-quarter-style">
+.gkq{ color:#ffd84d !important; }
+</style>
+<script id="v50-gk-quarter-fix">
+(function(){
+  function wrapGKCount(el){
+    if(!el) return;
+    // Avoid double-wrapping
+    if (el.querySelector && el.querySelector('.gkq')) return;
+
+    const text = (el.textContent || '').trim();
+    // Match "... 3/1" or "...3/1"
+    const m = text.match(/^(.*?)(\d+)\/(\d+)$/);
+    if(!m) return;
+
+    const prefix = m[1];
+    const fieldQ = m[2];
+    const gkQ = m[3];
+
+    el.innerHTML = '';
+    const t1 = document.createTextNode(prefix + fieldQ + '/');
+    const span = document.createElement('span');
+    span.className = 'gkq';
+    span.textContent = gkQ;
+    el.appendChild(t1);
+    el.appendChild(span);
+  }
+
+  function scan(){
+    document.querySelectorAll('.attendee, .rest-cell').forEach(wrapGKCount);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', scan);
+  } else {
+    scan();
+  }
+
+  const mo = new MutationObserver(function(){
+    scan();
+  });
+  mo.observe(document.documentElement, { childList:true, subtree:true, characterData:true });
+})();
+</script>
+
+
+<script id="v52-fixes">
+document.addEventListener('DOMContentLoaded', function () {
+  // Delete button should not start active
+  var deleteBtn = document.getElementById('deleteBtn');
+  if (deleteBtn) deleteBtn.classList.remove('active');
+
+  function recolorQuarterCounts() {
+    document.querySelectorAll('.attendee, .rest-cell').forEach(function(el) {
+      // Skip if already processed
+      if (el.querySelector('.gk-count')) return;
+
+      var raw = (el.textContent || '').trim();
+      // Expect end pattern like "name 3/1" or "3/1"
+      var m = raw.match(/^(.*?)(\d+)\/(\d+)$/);
+      if (!m) return;
+
+      var prefix = m[1];
+      var fieldNum = m[2];
+      var gkNum = m[3];
+
+      // Preserve only plain text content with styled counts
+      el.innerHTML = '';
+      var prefixNode = document.createTextNode(prefix);
+      var fieldSpan = document.createElement('span');
+      fieldSpan.className = 'field-count';
+      fieldSpan.textContent = fieldNum;
+
+      var slashSpan = document.createElement('span');
+      slashSpan.className = 'slash-count';
+      slashSpan.textContent = '/';
+
+      var gkSpan = document.createElement('span');
+      gkSpan.className = 'gk-count';
+      gkSpan.textContent = gkNum;
+
+      el.appendChild(prefixNode);
+      el.appendChild(fieldSpan);
+      el.appendChild(slashSpan);
+      el.appendChild(gkSpan);
+    });
+  }
+
+  recolorQuarterCounts();
+
+  // Re-apply when app updates DOM
+  var mo = new MutationObserver(function() {
+    recolorQuarterCounts();
+  });
+  mo.observe(document.body, { childList: true, subtree: true, characterData: true });
+});
+</script>
+<style id="v52-fixes-style">
+.field-count, .slash-count { color: #ffffff !important; }
+.gk-count { color: #ffd84d !important; }
+</style>
+
+
+<script id="v60b-drag-check-fix">
+document.addEventListener("pointermove", function(e){
+  try{
+    if(typeof moveSlotPress === "function") moveSlotPress(e);
+  }catch(_){}
+}, {passive:true});
+
+document.addEventListener("pointerup", function(e){
+  try{
+    if(typeof dragState !== "undefined" && dragState && dragState.started && dragState.slotKey && typeof endSlotPress === "function"){
+      endSlotPress(e, dragState.slotKey, dragState.name || "");
+    }
+  }catch(_){}
+});
+
+document.addEventListener("pointercancel", function(){
+  try{
+    if(typeof dragState !== "undefined"){
+      dragState={slotKey:null,startX:0,startY:0,moved:false,started:false};
+    }
+  }catch(_){}
+});
+</script>
+
+</body>
+</html>
